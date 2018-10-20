@@ -9,6 +9,10 @@ var leftGoatText = document.getElementById('goat-1-text');
 var rightGoatText = document.getElementById('goat-2-text');
 var currentLeftGoatImageArrayIndex = 0;
 var currentRightGoatImageArrayIndex = 4;
+var  clickCount = 0; // tracking total clicks on goats
+
+var ctx = document.getElementById("myChart").getContext('2d');
+console.log(ctx);
 
 //===============
 var allGoatImages = [];
@@ -35,7 +39,8 @@ GoatImage.prototype.renderGoat = function (){
 var goatClickHandler = function (event) {
   //when i Get the event back, make sure I clicked on an image
   if(event.target.id === 'left' || event.target.id === 'right'){
-    
+
+
     //Selects a single random number that isnt the last image shown on the screen
     do {
       var randomNumberLeft = Math.floor(Math.random() * allGoatImages.length)
@@ -67,6 +72,16 @@ var goatClickHandler = function (event) {
     leftGoatText.textContent = allGoatImages[randomNumberLeft].name;
     rightGoatText.textContent = allGoatImages[randomNumberRight].name;
 
+
+    clickCount++;
+    if (clickCount === 5) { //switch that tells us we have clicked 15 times
+      renderChart();
+
+      //remove the listener
+      imageSection.removeEventListener('click', goatClickHandler)
+
+    }
+
   }
   
 }
@@ -83,25 +98,65 @@ new GoatImage('./images/cruisin-goat.jpg', 'Cruisin Goat');
 new GoatImage('./images/float-your-goat.jpg', 'Floater Goat');
 
 
-// var goatClickHandler = function (eventObject) {
-//   do {
-//     var randomNumber = Math.floor(Math.random() * allGoatImages.length)
-//   } while (randomNumber === currentLeftGoatImageArrayIndex);
-
-//   allGoatImages[currentLeftGoatImageArrayIndex].likes++;
-//   allGoatImages[currentLeftGoatImageArrayIndex].appeared++;
-
-//   currentLeftGoatImageArrayIndex = randomNumber;
-//   eventObject.target.src = allGoatImages[randomNumber].src
-// }
+// ===================================================
+// Chart Js
+// ===================================================
 
 
 
-// new GoatImage('./images/cruisin-goat.jpg', 'cruising goat', '400px');
-// new GoatImage('./images/float-your-goat.jpg', 'float goat');
-// new GoatImage('./images/kissing-goat.jpg', 'kissing goat');
-// new GoatImage('./images/sassy-goat.jpg', 'sassy goat');
-// new GoatImage('./images/sweater-goat.jpg', 'sweater goat');
+var renderChart = function () {
 
-// GoatImage.renderTwoRandomly();
+  var goatNames = [];
+  var goatLikes = [];
+  var colors = [];
+  for (var i in allGoatImages) { //does one pass over all goat images, and collects their name, likes and gives them a background color
+    goatNames.push(allGoatImages[i].name);
+    goatLikes.push(allGoatImages[i].likes);
+    colors.push('red');
 
+  }
+
+  console.log(goatLikes);
+
+  var chartData = {
+    labels: goatNames, // #Labels for individual rows of data
+    datasets: [{ //takes in more than one set of data
+      label: '# of Votes', // #Need to label your chart
+      data: goatLikes, //#array of values
+      backgroundColor: colors,
+      borderColor: [
+        'rgba(255,99,132,1)',
+        'rgba(54, 162, 235, 1)',
+        'rgba(255, 206, 86, 1)',
+        'rgba(75, 192, 192, 1)',
+        'rgba(153, 102, 255, 1)',
+        'rgba(255, 159, 64, 1)'
+      ],
+      borderWidth: 1
+    }]
+  };
+
+  var chartOptions = {
+    scales: {
+      yAxes: [{
+        ticks: {
+          beginAtZero: true
+        }
+      }]
+    },
+    animation: {
+      duration: 800,
+      easing: 'easeInCirc',
+    },
+    responsive: true,
+  }
+
+  var barChart = {
+    type: 'horizontalBar', //refers to the type of chart
+    data: chartData, // #insert actual array of chart Data
+    options: chartOptions, // insert the default options
+  }
+
+  //render the chart
+  var myChart = new Chart(ctx, barChart);
+}
